@@ -1,20 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Games</title>
-</head>
-<body>
+<% layout('/layouts/Boilerplate')  %> 
     <h1>All Games</h1>
     <div>
         <a href="/games/new">Add Game</a>
     </div>
     <ul>
         <% for (let game of games) { %> 
-            <li><a href="/games/<%= game._id  %>"><%= game.title %> </a> </li>
+            <div class="card mb-3">
+                <div class="col-md-4">
+                    <img class="img-fluid" alt="" src="<%= game.image %>" >
+                </div>
+                <div class="col-mg-8">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= game.title %> </h5>
+                        <p class="card-text"><%= game.description %></p>
+                        <p class="card-text">
+                            <small class="text-muted"><%= game.location %></small>
+                        </p>
+                        <a class="btn btn-primary" href="/games/<%= game._id %> ">View <%= game.title %> </a>
+                    </div>
+                </div>
+            </div>
         <% } %> 
     </ul>
-</body>
-</html>

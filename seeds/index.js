@@ -18,9 +18,13 @@ const seedDB = async () => {
 	await Game.deleteMany({});
 	for (let i = 0; i < 50; i++) {
 		const random1000 = Math.floor(Math.random() * 1000);
+		const price = Math.floor(Math.random() * 100) + 5;
 		const game = new Game({
 			location: `${cities[random1000].city}, ${cities[random1000].state}`,
-			title: `${sample(descriptors)} ${sample(places)}`
+			title: `${sample(descriptors)} ${sample(places)}`,
+			image: 'https://source.unsplash.com/collection/2348098',
+			description: 'dkjahfewfhwjfhwefhweofhweofhweofh',
+			price
 		});
 		await game.save();
 	}

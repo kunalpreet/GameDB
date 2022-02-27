@@ -1,24 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Show</title>
-</head>
-<body>
-    <h1><%= game.title %> </h1>
-    <h2><%= game.location %> </h2>
-    <p>
-        <a href="/games/<%= game._id %>/edit ">Edit</a>
-    </p>
-    <form action="/games/<%= game._id %>?_method=DELETE " method="POST">
-    <button>
-        Delete
-    </button></form>
-    <footer>
-        <a href="/games">All Games</a>
-    </footer>
-
-</body>
-</html>
+<% layout('/layouts/Boilerplate')  %> 
+<div class="row">
+    <div class="col-6 offset-3">
+        <div class="card mb-3">
+            <img src="<%= game.image%>" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title"><%= game.title%></h5>
+                <p class="card-text"><%= game.description%></p>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item text-muted"><%= game.location%></li>
+                <li class="list-group-item">$<%= game.price%></li>
+            </ul>
+            <div class="card-body">
+                <a class="card-link btn btn-info" href="/games/<%=game._id%>/edit">Edit</a>
+                <form class="d-inline" action="/games/<%=game._id%>?_method=DELETE" method="POST">
+                    <button class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+            <div class="card-footer text-muted">
+                2 days ago
+            </div>
+        </div>
+    </div>
+</div>
