@@ -3,13 +3,12 @@ const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 const Joi = require('joi');
-const { gameSchema } = require('./validationSchema');
+const { gameSchema, reviewSchema } = require('./validationSchema');
 const catchAsync = require('./utils/catchAsync');
 const Game = require('./models/games');
 const methodOverride = require('method-override');
 const expressError = require('./utils/expressError');
-const req = require('express/lib/request');
-const exp = require('constants');
+const Review = require('./models/review');
 
 mongoose.connect('mongodb://localhost:27017/GameDB');
 
@@ -29,6 +28,16 @@ app.use(methodOverride('_method'));
 
 const validateGame = (req, res, next) => {
 	const { error } = gameSchema.validate(req.body);
+	if (error) {
+		const msg = error.details.map((el) => el.message).join(',');
+		throw new expressError(msg, 400);
+	} else {
+		next();
+	}
+};
+
+const validateReview = (req, res, next) => {
+	const { error } = reviewSchema.validate(req.body);
 	if (error) {
 		const msg = error.details.map((el) => el.message).join(',');
 		throw new expressError(msg, 400);
@@ -67,7 +76,8 @@ app.post(
 app.get(
 	'/games/:id',
 	catchAsync(async (req, res) => {
-		const game = await Game.findById(req.params.id);
+		const game = await Game.findById(req.params.id).populate('reviews');
+		console.log(game);
 		res.render('games/show', { game });
 	})
 );
@@ -96,6 +106,29 @@ app.delete(
 		const { id } = req.params;
 		await Game.findByIdAndDelete(id);
 		res.redirect('/games');
+	})
+);
+
+app.post(
+	'/games/:id/reviews',
+	validateReview,
+	catchAsync(async (req, res) => {
+		const game = await Game.findById(req.params.id);
+		const review = new Review(req.body.review);
+		game.reviews.push(review);
+		await review.save();
+		await game.save();
+		res.redirect(`/games/${game._id}`);
+	})
+);
+
+app.delete(
+	'/games/:id/reviews/:reviewId',
+	catchAsync(async (req, res) => {
+		const { id, reviewId } = req.params;
+		await Game.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+		await Review.findByIdAndDelete(reviewId);
+		res.redirect(`/games/${id}`);
 	})
 );
 
