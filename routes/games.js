@@ -34,6 +34,7 @@ router.post(
 	validateGame,
 	catchAsync(async (req, res) => {
 		const game = new Game(req.body.game);
+		game.author = req.user._id;
 		await game.save();
 		req.flash('success', 'Successfully added a new game!');
 		res.redirect(`/games/${game._id}`);
@@ -43,7 +44,7 @@ router.post(
 router.get(
 	'/:id',
 	catchAsync(async (req, res) => {
-		const game = await Game.findById(req.params.id).populate('reviews');
+		const game = await Game.findById(req.params.id).populate('reviews').populate('author');
 		if (!game) {
 			req.flash('error', 'Cannot find game! ');
 			return res.redirect('/games');
