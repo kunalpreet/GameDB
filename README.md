@@ -9,6 +9,8 @@ Kunalpreet Matharu
 Type `make` while in the main project directory to compile and automatically run `main`. To manually run without compiling, type `./main.exe` or `./main`, depending on OS.
 
 
-### Image
+### Images
 
 ![Initialization - Rotated](/images/newgame.png)
+
+![Initialization - Rotated](/images/test.png)
