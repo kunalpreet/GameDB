@@ -11,6 +11,10 @@ Kunalpreet Matharu
 
 ### Images
 
+![Initialization - Rotated](/images/login.png)
+
+![Initialization - Rotated](/images/edit.png)
+
 ![Initialization - Rotated](/images/newgame.png)
 
 ![Initialization - Rotated](/images/test.png)
