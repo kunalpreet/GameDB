@@ -2,13 +2,17 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
-const Joi = require('joi');
-const { gameSchema, reviewSchema } = require('./validationSchema');
-const catchAsync = require('./utils/catchAsync');
-const Game = require('./models/games');
+const session = require('express-session');
+const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const expressError = require('./utils/expressError');
-const Review = require('./models/review');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
+
+const userRoutes = require('./routes/users');
+const gamesRoutes = require('./routes/games');
+const reviewsRoutes = require('./routes/reviews');
 
 mongoose.connect('mongodb://localhost:27017/GameDB');
 
@@ -25,112 +29,38 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const validateGame = (req, res, next) => {
-	const { error } = gameSchema.validate(req.body);
-	if (error) {
-		const msg = error.details.map((el) => el.message).join(',');
-		throw new expressError(msg, 400);
-	} else {
-		next();
+const sessionConfig = {
+	secret: 'thisshouldbeabettersecret',
+	resave: false,
+	saveUninitialized: true,
+	cookie: {
+		httpOnly: true,
+		expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+		maxAge: 1000 * 60 * 60 * 24 * 7
 	}
 };
+app.use(session(sessionConfig));
+app.use(flash());
 
-const validateReview = (req, res, next) => {
-	const { error } = reviewSchema.validate(req.body);
-	if (error) {
-		const msg = error.details.map((el) => el.message).join(',');
-		throw new expressError(msg, 400);
-	} else {
-		next();
-	}
-};
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
 
-app.get('/', (req, res) => {
-	res.render('home');
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req, res, next) => {
+	res.locals.currentUser = req.user;
+	res.locals.success = req.flash('success');
+	res.locals.error = req.flash('error');
+	next();
 });
 
-app.get(
-	'/games',
-	catchAsync(async (req, res) => {
-		const games = await Game.find({});
-		res.render('games/index', { games });
-	})
-);
-
-app.get('/games/new', (req, res) => {
-	res.render('games/new');
-});
-
-app.post(
-	'/games',
-	validateGame,
-	catchAsync(async (req, res) => {
-		// if (!req.body.game) throw new expressError('Invalid Game Data', 400);
-		const game = new Game(req.body.game);
-		await game.save();
-		res.redirect(`/games/${game._id}`);
-	})
-);
-
-app.get(
-	'/games/:id',
-	catchAsync(async (req, res) => {
-		const game = await Game.findById(req.params.id).populate('reviews');
-		console.log(game);
-		res.render('games/show', { game });
-	})
-);
-
-app.get(
-	'/games/:id/edit',
-	catchAsync(async (req, res) => {
-		const game = await Game.findById(req.params.id);
-		res.render('games/edit', { game });
-	})
-);
-
-app.put(
-	'/games/:id',
-	validateGame,
-	catchAsync(async (req, res) => {
-		const { id } = req.params;
-		const game = await Game.findByIdAndUpdate(id, { ...req.body.game });
-		res.redirect(`/games/${game._id}`);
-	})
-);
-
-app.delete(
-	'/games/:id',
-	catchAsync(async (req, res) => {
-		const { id } = req.params;
-		await Game.findByIdAndDelete(id);
-		res.redirect('/games');
-	})
-);
-
-app.post(
-	'/games/:id/reviews',
-	validateReview,
-	catchAsync(async (req, res) => {
-		const game = await Game.findById(req.params.id);
-		const review = new Review(req.body.review);
-		game.reviews.push(review);
-		await review.save();
-		await game.save();
-		res.redirect(`/games/${game._id}`);
-	})
-);
-
-app.delete(
-	'/games/:id/reviews/:reviewId',
-	catchAsync(async (req, res) => {
-		const { id, reviewId } = req.params;
-		await Game.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-		await Review.findByIdAndDelete(reviewId);
-		res.redirect(`/games/${id}`);
-	})
-);
+app.use('/', userRoutes);
+app.use('/games', gamesRoutes);
+app.use('/games/:id/reviews', reviewsRoutes);
 
 app.all('*', (req, res, next) => {
 	next(new expressError('Page Not Found', 404));
