@@ -11,4 +11,4 @@ Type `make` while in the main project directory to compile and automatically run
 
 ### Image
 
-![Initialization - Rotated](/images/Screen Shot 2022-02-27 at 10.46.15 PM.png)
+![Initialization - Rotated](/images/newgame.png)
