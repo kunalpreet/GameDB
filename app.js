@@ -62,6 +62,10 @@ app.use('/', userRoutes);
 app.use('/games', gamesRoutes);
 app.use('/games/:id/reviews', reviewsRoutes);
 
+app.get('/', (req, res) => {
+	res.render('home');
+});
+
 app.all('*', (req, res, next) => {
 	next(new expressError('Page Not Found', 404));
 });
