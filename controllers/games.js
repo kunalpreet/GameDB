@@ -1,5 +1,9 @@
 const Game = require('../models/games');
 
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapBoxToken });
+const { cloudinary } = require('../cloudinary');
 module.exports.index = async (req, res) => {
 	const games = await Game.find({});
 	res.render('games/index', { games });
@@ -10,9 +14,18 @@ module.exports.renderNewForm = (req, res) => {
 };
 
 module.exports.addGame = async (req, res) => {
+	const geoData = await geocoder
+		.forwardGeocode({
+			query: req.body.game.location,
+			limit: 1
+		})
+		.send();
 	const game = new Game(req.body.game);
+	game.geometry = geoData.body.features[0].geometry;
+	game.images = req.files.map((f) => ({ url: f.path, filename: f.filename }));
 	game.author = req.user._id;
 	await game.save();
+	console.log(game);
 	req.flash('success', 'Successfully added a new game!');
 	res.redirect(`/games/${game._id}`);
 };
@@ -35,7 +48,17 @@ module.exports.showGame = async (req, res) => {
 
 module.exports.updateGame = async (req, res) => {
 	const { id } = req.params;
+	console.log(req.body);
 	const game = await Game.findByIdAndUpdate(id, { ...req.body.game });
+	const imgs = req.files.map((f) => ({ url: f.path, filename: f.filename }));
+	game.images.push(...imgs);
+	await game.save();
+	if (req.body.deleteImages) {
+		for (let filename of req.body.deleteImages) {
+			await cloudinary.uploader.destroy(filename);
+		}
+		await game.updateOne({ $pull: { images: { filename: { $in: req.body.deleteImages } } } });
+	}
 	req.flash('success', 'Successfully updated game!');
 	res.redirect(`/games/${game._id}`);
 };
