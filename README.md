@@ -9,4 +9,4 @@ Kunalpreet Matharu
 - Designed responsive, dynamic and intuitive web-pages using Bootstrap and EJS
 
 # Website
-Visit the website at [https://store-game-db.herokuapp.com/games](https://store-game-db.herokuapp.com)
+Visit the website at [https://store-game-db.herokuapp.com](https://store-game-db.herokuapp.com)
