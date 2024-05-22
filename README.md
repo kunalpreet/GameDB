@@ -8,5 +8,3 @@ Kunalpreet Matharu
 - Provided user authentication and authorization using Passport.js
 - Designed responsive, dynamic and intuitive web-pages using Bootstrap and EJS
 
-# Website
-Visit the website at [https://store-game-db.herokuapp.com](https://store-game-db.herokuapp.com)
