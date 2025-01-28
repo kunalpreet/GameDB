@@ -1,5 +1,7 @@
 # GameDB
 
+![Initialization - Rotated](public/images/homepage.png)
+
 Kunalpreet Matharu
 
 - Developed a Yelp-style full stack web application for sharing and discussing video games
